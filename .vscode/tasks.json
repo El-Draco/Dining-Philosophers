@@ -7,7 +7,7 @@
             "args": [
                 "-fdiagnostics-color=always",
                 "-g",
-                "${file}", "queue.c",
+                "${file}", "parse.c", "libftprintf.a",
                 "-o",
                 "${fileDirname}/${fileBasenameNoExtension}"
             ],

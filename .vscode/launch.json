@@ -1,0 +1,20 @@
+{
+	"configurations": [
+		{
+			"name": "C++ Launch",
+			"type": "cppdbg",
+			"request": "launch",
+			"program": "${fileDirname}/${fileBasenameNoExtension}",
+			"args": [
+				"4",
+				"500",
+				"100",
+				"100"
+			],
+			"environment": [],
+			"externalConsole" : false,
+		"cwd": "${fileDirname}",
+		"MIMode": "lldb"
+		}
+	]
+}
