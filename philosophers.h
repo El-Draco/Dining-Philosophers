@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: rriyas <rriyas@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/06/20 13:09:24 by rriyas            #+#    #+#             */
-/*   Updated: 2022/06/22 16:01:49 by rriyas           ###   ########.fr       */
+/*   Created: 2022/06/24 18:21:56 by rriyas            #+#    #+#             */
+/*   Updated: 2022/07/26 13:43:34 by rriyas           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,35 +41,30 @@ typedef struct	s_fork
 
 typedef struct s_philo
 {
+	int				*hungry;
+	int 			alive;
+	struct s_philo	**others;
+	t_fork			**forks;
 	int				id;
 	pthread_t		life;
 	pthread_mutex_t	soul;
+	pthread_mutex_t *pager;
 	t_dna			dna;
 	long			last_meal;
+	long			birth;
+	long			dead;
 	enum	status	mood;
 	struct s_philo	*prev;
 	struct s_philo	*next;
-
-	// void	*life_cycle();
+	int				plates;
 } t_philo;
 
-typedef struct s_queue
+typedef struct s_table
 {
-	struct s_philo	*philos;
-	t_fork			*forks;
-	int				size;
-	struct s_philo	*first;
-	struct s_philo	*last;
-} t_queue;
-
-struct s_queue *newQueue(int size);
-int get_size(struct s_queue *q);
-int is_empty(struct s_queue *q);
-struct s_philo *first(struct s_queue *q);
-struct s_philo *last(struct s_queue *q);
-void enqueue(struct s_queue *q, struct s_philo *p);
-void dequeue(struct s_queue *q);
-
+	t_fork			**forks;
+	t_philo			**philos;
+	pthread_mutex_t	pager_mutex;
+	int				pager;
+}					t_table;
 
 int parse_args(int argc, char **argv, t_dna *d);
-long	ft_atoi(char *str, int *flag);

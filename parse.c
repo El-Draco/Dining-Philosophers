@@ -6,7 +6,7 @@
 /*   By: rriyas <rriyas@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/20 15:44:00 by rriyas            #+#    #+#             */
-/*   Updated: 2022/06/21 16:23:12 by rriyas           ###   ########.fr       */
+/*   Updated: 2022/07/25 18:23:18 by rriyas           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,8 +61,9 @@ int parse_args(int argc, char **argv, t_dna *d)
 		return (-1);
 	else if (argc <= 6)
 	{
+		d->gene_pool = ft_atoi(argv[1], &flag);
 		d->time_to_die = ft_atoi(argv[2], &flag);
-		d->time_to_eat = ft_atoi(argv[3], &flag);
+		d->time_to_eat = ft_atoi(argv[3], &flag) ;
 		d->time_to_sleep = ft_atoi(argv[4], &flag);
 		if (argc == 6)
 			d->meals = ft_atoi(argv[5], &flag);

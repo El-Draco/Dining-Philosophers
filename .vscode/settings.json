@@ -1,6 +1,8 @@
 {
 	"files.associations": {
 		"philosophers.h": "c",
-		"*.a": "c"
+		"*.a": "c",
+		"__locale": "c",
+		"locale": "c"
 	}
 }

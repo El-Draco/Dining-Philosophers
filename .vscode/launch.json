@@ -6,8 +6,8 @@
 			"request": "launch",
 			"program": "${fileDirname}/${fileBasenameNoExtension}",
 			"args": [
-				"4",
-				"500",
+				"3",
+				"400",
 				"100",
 				"100"
 			],
