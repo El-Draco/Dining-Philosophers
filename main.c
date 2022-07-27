@@ -6,13 +6,14 @@
 /*   By: rriyas <rriyas@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/21 15:58:22 by rriyas            #+#    #+#             */
-/*   Updated: 2022/07/26 12:54:52 by rriyas           ###   ########.fr       */
+/*   Updated: 2022/07/27 11:24:51 by rriyas           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "ft_printf.h"
 #include "philosophers.h"
 #include <sys/time.h>
-// #include "ft_printf.h"
+// #include "libftprintf.a"
 
 // timestamp
 long time_stamp()
@@ -47,18 +48,19 @@ void call_waiter(void *arg, int argc)
 		all_ate = 1;
 		while (i < p[0]->dna.gene_pool)
 		{
+			pthread_mutex_lock(&p[i]->soul);
 			pthread_mutex_lock(&table->pager_mutex);
-			// pthread_mutex_lock(&p[i]->soul);
 			if (p[i]->alive == 0)
 			{
 				status = 0;
 				kiraman_katibin(p[i]->dead - p[i]->alive, i, "has died\n");
-				// pthread_mutex_unlock(&p[i]->soul);
+				pthread_mutex_unlock(&table->pager_mutex);
+				pthread_mutex_unlock(&p[i]->soul);
 				exit(0);
 			}
 			if (p[i]->plates < p[i]->dna.meals)
 				all_ate &= 0;
-			// pthread_mutex_unlock(&p[i]->soul);
+			pthread_mutex_unlock(&p[i]->soul);
 			if (status == 0)
 				return ;
 			i++;
@@ -75,8 +77,8 @@ int pick_left_fork(t_philo **p, int id, t_fork **f)
 {
 	int status;
 
-	status = 1;
 	pthread_mutex_lock(&f[id]->fork_mutex);
+	status = 1;
 	// pthread_mutex_lock(&f[(id + 1) % p[id]->dna.gene_pool]->fork_mutex);
 	if (f[id]->fork == 0)
 		status = 0;
@@ -89,48 +91,47 @@ int pick_left_fork(t_philo **p, int id, t_fork **f)
 
 // https://www.taskade.com/d/Wo2GH3Ram15Ni6H5?share=edit&edit=2xseuMb6FTFLbsNL
 
-int pick_right_fork(t_philo **p, int id, t_fork **f)
+int pick_right_fork(t_philo **p, int id, t_fork **f, int n)
 {
 	int status;
 
-	status = 1;
 	// pthread_mutex_lock(&f[id]->fork_mutex);
-	pthread_mutex_lock(&f[(id + 1) % p[id]->dna.gene_pool]->fork_mutex);
-	if (f[(id + 1) % p[id]->dna.gene_pool]->fork == 0)
+	status = 1;
+	pthread_mutex_lock(&f[(id + 1) % n]->fork_mutex);
+	if (f[(id + 1) % n]->fork == 0)
 		status= 0;
 	else
-		f[(id + 1) % p[id]->dna.gene_pool]->fork = 1;
+		f[(id + 1) % n]->fork = 1;
 	// pthread_mutex_unlock(&f[id]->fork_mutex);
-	pthread_mutex_unlock(&f[(id + 1) % p[id]->dna.gene_pool]->fork_mutex);
+	pthread_mutex_unlock(&f[(id + 1) % n]->fork_mutex);
 	return status;
 }
 
 
 
-int think(t_philo **p, t_fork **f, int id);
+int think(t_philo **p, t_fork **f, int id, t_dna dna);
 
-int eat(t_philo **p, t_fork **f, int id)
+int eat(t_philo **p, t_fork **f, int id, t_dna dna)
 {
 	int first;
 	int second;
-
+	pthread_mutex_lock(&p[id] ->soul);
 	first = id;
-	second = (id + 1) % p[id]->dna.gene_pool;
+	second = (id + 1) % dna.gene_pool;
 	if (id % 2 == 1)
 	{
-		first = (id + 1) % p[id]->dna.gene_pool;
+		first = (id + 1) % dna.gene_pool;
 		second = id;
 	}
 	p[id]->mood = ATE;
 	long time_start;
 	struct timeval t;
-	pthread_mutex_lock(&p[id] ->soul);
+	// pthread_mutex_lock(&(*p[id]->pager));
 	pthread_mutex_lock(&f[first]->fork_mutex);
-	f[id]->fork = 0;
+	f[first]->fork = 0;
 	pthread_mutex_lock(&f[second]->fork_mutex);
-	f[(id + 1) % p[id]->dna.gene_pool]->fork = 0;
-	// gettimeofday(&t, NULL);
-
+	f[second]->fork = 0;
+	// pthread_mutex_unlock(&*p[id]->pager);
 	long timer = 0;
 	time_start = time_stamp();
 	p[id]->last_meal = time_start;
@@ -142,7 +143,7 @@ int eat(t_philo **p, t_fork **f, int id)
 	{
 		usleep(50);
 		timer  = time_stamp() - time_start;
-		if (timer + time_start - p[id]->last_meal >= p[id]->dna.time_to_die)
+		if (timer + time_start - p[id]->last_meal >= dna.time_to_die)
 		{
 			p[id]->alive = 0;
 			p[id]->dead = timer + time_start - p[id]->birth;
@@ -155,42 +156,58 @@ int eat(t_philo **p, t_fork **f, int id)
 	pthread_mutex_unlock(&*p[id]->pager);
 	f[id]->fork = 1;
 	pthread_mutex_unlock(&f[first]->fork_mutex);
-	f[(id + 1) % p[id]->dna.gene_pool]->fork = 1;
+	f[(id + 1) % dna.gene_pool]->fork = 1;
 	pthread_mutex_unlock(&f[second]->fork_mutex);
 	pthread_mutex_unlock(&p[id]->soul);
 	return (0);
 }
 
-int try_to_eat(t_philo **p, t_fork **f, int id)
+int try_to_eat(t_philo **p, t_fork **f, int id, t_dna dna)
 {
 	int status;
-	int n;
 
-	n = p[id]->dna.gene_pool;
+	pthread_mutex_lock(&*p[id]->pager);
 	if (id % 2 == 0)
 	{
 		status = pick_left_fork(p, id, f);
-		status &= pick_right_fork(p, id, f);
+		status &= pick_right_fork(p, id, f, dna.gene_pool);
 	}
 	else
 	{
-		status = pick_right_fork(p, id, f);
+		status = pick_right_fork(p, id, f, dna.gene_pool);
 		status &= pick_left_fork(p, id, f);
 	}
 	if (status == 0)
-		think(p, f,id);
+	{
+		pthread_mutex_unlock(&*p[id]->pager);
+		think(p, f,id, dna);
+	}
 	else
 	{
-		while (p[id]->hungry[id] == id && p[id]->hungry[(id + 1) % n] == id)
+		pthread_mutex_unlock(&*p[id]->pager);
+		while (2)
+		{
+			pthread_mutex_lock(&p[id]->soul);
+			if (p[id]->hungry[id] != id && p[id]->hungry[(id + 1) % dna.gene_pool] != id)
+			{
+				pthread_mutex_unlock(&p[id]->soul);
+				break;
+			}
 			usleep(50);
+			pthread_mutex_unlock(&p[id]->soul);
+		}
+		pthread_mutex_lock(&p[id]->soul);
+		pthread_mutex_lock(&*p[id]->pager);
 		p[id]->hungry[id] = id;
-		p[id]->hungry[(id + 1) % n] = id;
-		eat(p, f, id);
+		p[id]->hungry[(id + 1) % dna.gene_pool] = id;
+		pthread_mutex_unlock(&*p[id]->pager);
+		pthread_mutex_unlock(&p[id]->soul);
+		eat(p, f, id, dna);
 	}
 	return (1);
 }
 
-int think(t_philo **p, t_fork **f, int id)
+int think(t_philo **p, t_fork **f, int id, t_dna dna)
 {
 	long thought_for = 0;
 	long t_start;
@@ -201,41 +218,42 @@ int think(t_philo **p, t_fork **f, int id)
 	if (id % 2 == 0)
 	{
 		f1 = id;
-		f2 = (id + 1) % p[id]->dna.gene_pool;
+		f2 = (id + 1) % dna.gene_pool;
 	}
 	else
 	{
-		f1 = (id + 1 ) % p[id]->dna.gene_pool;
+		f1 = (id + 1 ) % dna.gene_pool;
 		f2 = id;
 	}
 	pthread_mutex_lock(&p[id]->soul);
 	while (2)
 	{
 		pthread_mutex_lock(&f[id]->fork_mutex);
-		pthread_mutex_lock(&f[(id + 1) % p[id]->dna.gene_pool]->fork_mutex);
+		pthread_mutex_lock(&f[(id + 1) % dna.gene_pool]->fork_mutex);
 		if (f[f1]->fork == 1 && f[f2]->fork == 1)
 		{
 			pthread_mutex_unlock(&f[id]->fork_mutex);
-			pthread_mutex_unlock(&f[(id + 1) % p[id]->dna.gene_pool]->fork_mutex);
-			eat(p,f,id);
+			pthread_mutex_unlock(&f[(id + 1) % dna.gene_pool]->fork_mutex);
+			pthread_mutex_unlock(&p[id]->soul);
+			eat(p,f,id, dna);
 			break;
 		}
 		pthread_mutex_unlock(&f[id]->fork_mutex);
-		pthread_mutex_unlock(&f[(id + 1) % p[id]->dna.gene_pool]->fork_mutex);
+		pthread_mutex_unlock(&f[(id + 1) % dna.gene_pool]->fork_mutex);
 		usleep(50);
 		thought_for = time_stamp() - t_start;
 		if (thought_for +  p[id]->last_meal - t_start >= p[id]->dna.time_to_die)
 		{
 			p[id]->alive = 0;
 			p[id]->dead = t_start + thought_for - p[id]->birth;
+			pthread_mutex_unlock(&p[id]->soul);
 			break;
 		}
 	}
-	pthread_mutex_unlock(&p[id]->soul);
 	return (0);
 }
 
-int p_sleep(t_philo **p, int id)
+int p_sleep(t_philo **p, int id, t_dna dna)
 {
 	long slept_for;
 	long t_start;
@@ -246,13 +264,13 @@ int p_sleep(t_philo **p, int id)
 	pthread_mutex_lock(&p[id]->soul);
 	t_start = time_stamp();
 	pthread_mutex_lock(&*p[id]->pager);
-	kiraman_katibin(t_start -  p[id]->birth, id, "is sleeping\n\0");
+	kiraman_katibin(t_start -  p[id]->birth, id, "is sleeping\n");
 	pthread_mutex_unlock(&*p[id]->pager);
 	while (slept_for < p[id]->dna.time_to_sleep)
 	{
 		usleep(50);
 		slept_for = time_stamp() - t_start;
-		if (slept_for + t_start - p[id]->last_meal >= p[id]->dna.time_to_die)
+		if (slept_for + t_start - p[id]->last_meal >= dna.time_to_die)
 		{
 			p[id]->alive = 0;
 			p[id]->dead = t_start + slept_for - p[id]->birth;
@@ -272,14 +290,14 @@ void *life_cycle(void *arg)
 	p = ((t_philo*)arg);
 	while (2)
 	{
-		if (p->dna.gene_pool == 1)
-		{
-			p->alive = 0;
-			p->dead = time_stamp() - p->birth;
-			break ;
-		}
-		try_to_eat(p->others, p->forks, p->id);
-		p_sleep(p->others, p->id);
+		// if (p->dna.gene_pool == 1)
+		// {
+		// 	p->alive = 0;
+		// 	p->dead = time_stamp() - p->birth;
+		// 	break ;
+		// }
+		try_to_eat(p->others, p->forks, p->id, p->dna);
+		p_sleep(p->others, p->id, p->dna);
 		pthread_mutex_lock(&*p->pager);
 		kiraman_katibin(time_stamp() - p->birth, p->id, "is thinking\n");
 		pthread_mutex_unlock(&*p->pager);
@@ -320,7 +338,6 @@ int main(int argc, char **argv)
 		forks[i] = (t_fork *)malloc(sizeof(t_fork));
 		forks[i]->fork = 1;
 	}
-
 	long time_now;
 	struct timeval t;
 	gettimeofday(&t, NULL);
@@ -362,18 +379,19 @@ int main(int argc, char **argv)
 	// 		{
 	// 			kiraman_katibin(philos[i]->dead, i, "has died\n");
 	// 			pthread_mutex_unlock(&*philos[i]->pager);
-
 	// 			// pthread_mutex_unlock(&philos[i]->soul);
 	// 			exit(0);
 	// 		}
 	// 		// pthread_mutex_unlock(&philos[i]->soul);
 	// 		pthread_mutex_unlock(&*philos[i]->pager);
-
 	// 		i++;
 	// 	}
 	// }
 	for (int i = 0; i < dna.gene_pool; i++)
 		pthread_join(philos[i]->life, NULL);
+	for (int i = 0; i < dna.gene_pool; i++)
+		pthread_detach(philos[i]->life);
+
 	for (int i = 0; i < dna.gene_pool; i++)
 	{
 		pthread_mutex_destroy(&(forks[i]->fork_mutex));
