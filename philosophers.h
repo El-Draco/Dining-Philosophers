@@ -6,7 +6,7 @@
 /*   By: rriyas <rriyas@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/24 18:21:56 by rriyas            #+#    #+#             */
-/*   Updated: 2022/07/26 13:43:34 by rriyas           ###   ########.fr       */
+/*   Updated: 2022/07/27 20:21:02 by rriyas           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,15 +14,6 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
-
-enum status
-{
-	DEAD = 0,
-	HUNGRY = 1,
-	ATE = 2,
-	THINKING = 3,
-	SLEEPING = 4,
-}	mood;
 
 typedef struct s_dna
 {
@@ -48,12 +39,11 @@ typedef struct s_philo
 	int				id;
 	pthread_t		life;
 	pthread_mutex_t	soul;
-	pthread_mutex_t *pager;
+	pthread_mutex_t *time_stone;
 	t_dna			dna;
 	long			last_meal;
 	long			birth;
 	long			dead;
-	enum	status	mood;
 	struct s_philo	*prev;
 	struct s_philo	*next;
 	int				plates;
@@ -63,8 +53,8 @@ typedef struct s_table
 {
 	t_fork			**forks;
 	t_philo			**philos;
-	pthread_mutex_t	pager_mutex;
-	int				pager;
+	pthread_mutex_t	time_stone_mutex;
+	int				time_stone;
 }					t_table;
 
 int parse_args(int argc, char **argv, t_dna *d);

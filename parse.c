@@ -6,7 +6,7 @@
 /*   By: rriyas <rriyas@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/20 15:44:00 by rriyas            #+#    #+#             */
-/*   Updated: 2022/07/25 18:23:18 by rriyas           ###   ########.fr       */
+/*   Updated: 2022/07/27 20:21:15 by rriyas           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,6 +67,8 @@ int parse_args(int argc, char **argv, t_dna *d)
 		d->time_to_sleep = ft_atoi(argv[4], &flag);
 		if (argc == 6)
 			d->meals = ft_atoi(argv[5], &flag);
+		else
+			d->meals = -1;
 	}
 	return flag;
 }
