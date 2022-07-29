@@ -6,7 +6,7 @@
 /*   By: rriyas <rriyas@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/24 18:21:56 by rriyas            #+#    #+#             */
-/*   Updated: 2022/07/27 20:21:02 by rriyas           ###   ########.fr       */
+/*   Updated: 2022/07/29 16:22:29 by rriyas           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,6 +55,7 @@ typedef struct s_table
 	t_philo			**philos;
 	pthread_mutex_t	time_stone_mutex;
 	int				time_stone;
+	int				*hungry;
 }					t_table;
 
 int parse_args(int argc, char **argv, t_dna *d);
