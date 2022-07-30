@@ -6,7 +6,7 @@
 /*   By: rriyas <rriyas@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/21 15:58:22 by rriyas            #+#    #+#             */
-/*   Updated: 2022/07/29 21:04:56 by rriyas           ###   ########.fr       */
+/*   Updated: 2022/07/30 11:27:26 by rriyas           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,6 +93,7 @@ void call_waiter(pthread_mutex_t *time_stone, t_table *table, t_dna dna)
 		}
 		if (dna.meals != -1 && all_ate == 1)
 		{
+			usleep(50);
 			kill_simulation(table, dna.gene_pool);
 			return ;
 		}
@@ -206,7 +207,7 @@ void eat(t_philo **p, t_fork **f, int id, t_dna dna)
 	struct timeval t;
 	long timer = 0;
 
-	lock_forks(f, id, dna.gene_pool);
+	// lock_forks(f, id, dna.gene_pool);
 	time_start = time_stamp(&*p[id]->time_stone);
 	p[id]->last_meal = time_start;
 	kiraman_katibin(&*p[id]->time_stone, time_start - p[id]->birth, id, "is eating\n");
@@ -224,7 +225,7 @@ void eat(t_philo **p, t_fork **f, int id, t_dna dna)
 		}
 		pthread_mutex_unlock(&p[id]->soul);
 	}
-	unlock_forks(f, id, dna.gene_pool);
+	// unlock_forks(f, id, dna.gene_pool);
 }
 
 /**
@@ -269,9 +270,10 @@ void pick_up_both_forks(t_philo **p, t_fork **f, int id, t_dna dna)
 {
 	while (2)
 	{
-		// try_to_pick_up_forks(p, f, id, dna);
-		if (pick_left_fork(f, id) == 0 && pick_right_fork(f, id, dna.gene_pool) == 0)
-			continue;
+		try_to_pick_up_forks(p, f, id, dna);
+		// if (pick_left_fork(f, id) == 0 && pick_right_fork(f, id, dna.gene_pool) == 0)
+			// continue;
+		lock_forks(f,id,dna.gene_pool);
 		pthread_mutex_lock(&*p[id]->time_stone);
 		if (p[id]->hungry[id] != id && p[id]->hungry[(id + 1) % dna.gene_pool] != id)
 		{
@@ -282,8 +284,10 @@ void pick_up_both_forks(t_philo **p, t_fork **f, int id, t_dna dna)
 			p[id]->plates++;
 			pthread_mutex_unlock(&p[id]->soul);
 			eat(p, f, id, dna);
+			unlock_forks(f,id,dna.gene_pool);
 			return;
 		}
+		unlock_forks(f,id,dna.gene_pool);
 		pthread_mutex_unlock(&*p[id]->time_stone);
 	}
 }
