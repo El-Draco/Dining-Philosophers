@@ -6,7 +6,7 @@
 /*   By: rriyas <rriyas@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/21 15:58:22 by rriyas            #+#    #+#             */
-/*   Updated: 2022/07/30 11:27:26 by rriyas           ###   ########.fr       */
+/*   Updated: 2022/07/30 18:25:19 by rriyas           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,10 +45,21 @@ void kiraman_katibin(pthread_mutex_t *time_stone, long time_of_action, int phil,
 {
 	pthread_mutex_lock(&*time_stone);
 	usleep(10);
-	printf("%lu %d %s", time_of_action, phil, action);
+	printf("%lu \t%d %s", time_of_action, phil + 1, action);
 	pthread_mutex_unlock(&*time_stone);
 }
 
+int check_death(t_philo **p, int id)
+{
+	pthread_mutex_lock(&p[id]->soul);
+	if (p[id]->alive == 0 || p[id]->plates == p[id]->dna.meals)
+	{
+		pthread_mutex_unlock(&p[id]->soul);
+		return (-1);
+	}
+	pthread_mutex_unlock(&p[id]->soul);
+	return (1);
+}
 
 void kill_simulation(t_table *table, int n);
 
@@ -75,27 +86,27 @@ void call_waiter(pthread_mutex_t *time_stone, t_table *table, t_dna dna)
 		all_ate = 1;
 		while (i < dna.gene_pool)
 		{
-			pthread_mutex_lock(&p[i]->soul);
-			if (p[i]->alive == 0)
-			{
-				status = 0;
-				pthread_mutex_unlock(&p[i]->soul);
-				kiraman_katibin(&*time_stone, p[i]->dead - p[i]->alive, i, "has died\n");
-				kill_simulation(table, dna.gene_pool);
-				return ;
-			}
+			// pthread_mutex_lock(&p[i]->soul);
+			// if (p[i]->alive == 0)
+			// {
+			// 	status = 0;
+			// 	pthread_mutex_unlock(&p[i]->soul);
+			// 	kiraman_katibin(&*time_stone, p[i]->dead - p[i]->alive, i, "has died\n");
+			// 	kill_simulation(table, dna.gene_pool);
+			// 	return;
+			// }
 			if (p[i]->plates < p[i]->dna.meals)
 				all_ate &= 0;
-			pthread_mutex_unlock(&p[i]->soul);
-			if (status == 0)
-				return;
+			// pthread_mutex_unlock(&p[i]->soul);
+			// if (status == 0)
+				// return;
 			i++;
 		}
 		if (dna.meals != -1 && all_ate == 1)
 		{
-			usleep(50);
+			usleep(10);
 			kill_simulation(table, dna.gene_pool);
-			return ;
+			return;
 		}
 	}
 }
@@ -116,7 +127,9 @@ int pick_left_fork(t_fork **f, int id)
 	if (f[id]->fork == 0)
 		status = 0;
 	else
+	{
 		f[id]->fork = 1;
+	}
 	pthread_mutex_unlock(&f[id]->fork_mutex);
 	return status;
 }
@@ -213,7 +226,9 @@ void eat(t_philo **p, t_fork **f, int id, t_dna dna)
 	kiraman_katibin(&*p[id]->time_stone, time_start - p[id]->birth, id, "is eating\n");
 	while (timer < p[id]->dna.time_to_eat)
 	{
-		usleep(50);
+		// usleep(10);
+		if(check_death(p,id) == -1)
+			break ;
 		timer = time_stamp(&*p[id]->time_stone) - time_start;
 		pthread_mutex_lock(&p[id]->soul);
 		if (timer + time_start - p[id]->last_meal >= dna.time_to_die)
@@ -243,6 +258,7 @@ void try_to_pick_up_forks(t_philo **p, t_fork **f, int id, t_dna dna)
 	status = 0;
 	while (status == 0)
 	{
+
 		status = 0;
 		if (id % 2 == 0)
 		{
@@ -254,6 +270,7 @@ void try_to_pick_up_forks(t_philo **p, t_fork **f, int id, t_dna dna)
 			status = pick_right_fork(f, id, dna.gene_pool);
 			status &= pick_left_fork(f, id);
 		}
+
 	}
 }
 
@@ -270,26 +287,30 @@ void pick_up_both_forks(t_philo **p, t_fork **f, int id, t_dna dna)
 {
 	while (2)
 	{
+
 		try_to_pick_up_forks(p, f, id, dna);
-		// if (pick_left_fork(f, id) == 0 && pick_right_fork(f, id, dna.gene_pool) == 0)
-			// continue;
-		lock_forks(f,id,dna.gene_pool);
+		if (check_death(p, id) == -1)
+			return ;
+		lock_forks(f, id, dna.gene_pool);
 		pthread_mutex_lock(&*p[id]->time_stone);
 		if (p[id]->hungry[id] != id && p[id]->hungry[(id + 1) % dna.gene_pool] != id)
 		{
 			p[id]->hungry[id] = id;
 			p[id]->hungry[(id + 1) % dna.gene_pool] = id;
 			pthread_mutex_unlock(&*p[id]->time_stone);
+			kiraman_katibin(&*p[id]->time_stone, time_stamp(&*p[id]->time_stone) - p[id]->birth, id, "has taken a fork\n");
+			kiraman_katibin(&*p[id]->time_stone, time_stamp(&*p[id]->time_stone) - p[id]->birth, id, "has taken a fork\n");
+			eat(p, f, id, dna);
 			pthread_mutex_lock(&p[id]->soul);
 			p[id]->plates++;
 			pthread_mutex_unlock(&p[id]->soul);
-			eat(p, f, id, dna);
-			unlock_forks(f,id,dna.gene_pool);
+			unlock_forks(f, id, dna.gene_pool);
 			return;
 		}
-		unlock_forks(f,id,dna.gene_pool);
+		unlock_forks(f, id, dna.gene_pool);
 		pthread_mutex_unlock(&*p[id]->time_stone);
 	}
+	return;
 }
 
 /**
@@ -311,7 +332,6 @@ void p_sleep(t_philo **p, int id, pthread_mutex_t *time_stone, t_dna dna)
 	kiraman_katibin(time_stone, t_start - p[id]->birth, id, "is sleeping\n");
 	while (slept_for < dna.time_to_sleep)
 	{
-		usleep(50);
 		slept_for = time_stamp(&*time_stone) - t_start;
 		pthread_mutex_lock(&p[id]->soul);
 		if (slept_for + t_start - p[id]->last_meal >= dna.time_to_die)
@@ -319,13 +339,18 @@ void p_sleep(t_philo **p, int id, pthread_mutex_t *time_stone, t_dna dna)
 			p[id]->alive = 0;
 			p[id]->dead = t_start + slept_for - p[id]->birth;
 			pthread_mutex_unlock(&p[id]->soul);
-			break;
+			return;
 		}
 		pthread_mutex_unlock(&p[id]->soul);
-
 	}
-	pthread_mutex_unlock(&p[id]->soul);
 }
+
+
+void clean_up(t_philo *p, int id, int n)
+{
+
+}
+
 
 /**
  * @brief					The thread routine for each philosopher (eat - sleep - think)
@@ -348,14 +373,21 @@ void *life_cycle(void *arg)
 			pthread_mutex_unlock(&p->soul);
 			break;
 		}
+		if (check_death(p->others, p->id) == -1)
+			break;
 		pick_up_both_forks(p->others, p->forks, p->id, p->dna);
+		if (check_death(p->others, p->id) == -1)
+			break;
 		p_sleep(&*(p->others), p->id, &*p->time_stone, p->dna);
+		if (check_death(p->others, p->id) == -1)
+			break;
 		kiraman_katibin(&*(p->time_stone), time_stamp(&*(p->time_stone)) - p->birth, p->id, "is thinking\n");
 	}
+	// clean_up(p, p->id, p->dna.gene_pool);
 	return (NULL);
 }
 
-//malloc philos
+// malloc philos
 t_philo **prepare_philos(t_dna *dna, t_fork **forks, int hungry[])
 {
 	t_philo **philos;
@@ -411,38 +443,6 @@ void initialize_mutexes(t_table *table, t_dna *dna)
 	}
 }
 
-void destroy_mutexes(t_table *table, int n)
-{
-	int i;
-
-	i = 0;
-	while(i < n)
-	{
-		pthread_mutex_destroy(&(table->forks[i]->fork_mutex));
-		pthread_mutex_destroy(&(table->philos[i]->soul));
-		i++;
-	}
-	pthread_mutex_destroy(&(table->time_stone_mutex));
-}
-
-void clean_table(t_table *table, int n);
-
-void kill_simulation(t_table *table, int n)
-{
-	int i;
-
-	i = 0;
-	while (i < n)
-	{
-		table->philos[i]->alive = 0;
-		i++;
-	}
-	destroy_mutexes(table, n);
-	clean_table(table, n);
-	// usleep(50);
-	exit(0);
-}
-
 
 t_table *initialize_simulation(t_dna *dna)
 {
@@ -457,12 +457,17 @@ t_table *initialize_simulation(t_dna *dna)
 	return (table);
 }
 
+
 void clean_table(t_table *table, int n)
 {
 	int i;
+
 	i = 0;
+	pthread_mutex_destroy(&(table->time_stone_mutex));
 	while (i < n)
 	{
+		pthread_mutex_destroy(&table->philos[i]->soul);
+		pthread_mutex_destroy(&table->forks[i]->fork_mutex);
 		free(table->forks[i]);
 		free(table->philos[i]);
 		i++;
@@ -471,8 +476,22 @@ void clean_table(t_table *table, int n)
 	free(table->hungry);
 	free(table->philos);
 	free(table);
+}
 
-	// destroy_mutexes(table, n);
+void kill_simulation(t_table *table, int n)
+{
+	int i;
+
+	i = 0;
+	pthread_mutex_lock(&table->time_stone_mutex);
+	while (i < n)
+	{
+		pthread_mutex_lock(&table->philos[i]->soul);
+		table->philos[i]->alive = 0;
+		pthread_mutex_unlock(&table->philos[i]->soul);
+		i++;
+	}
+	pthread_mutex_unlock(&table->time_stone_mutex);
 }
 
 int main(int argc, char **argv)
@@ -486,11 +505,10 @@ int main(int argc, char **argv)
 	table = initialize_simulation(&dna);
 	philos = table->philos;
 	for (int i = 0; i < dna.gene_pool; i++)
-		pthread_create(&(philos[i]->life), NULL, &life_cycle, (void **)(&*(philos[i])));
-	call_waiter(&(table->time_stone_mutex), table, dna);
+		pthread_create(&(philos[i]->life), NULL, &life_cycle, (void **)(&*philos[i]));
+	call_waiter
 	for (int i = 0; i < dna.gene_pool; i++)
 		pthread_join(philos[i]->life, NULL);
-	for (int i = 0; i < dna.gene_pool; i++)
-		pthread_detach(philos[i]->life);
+	clean_table(table, dna.gene_pool);
 	return (0);
 }

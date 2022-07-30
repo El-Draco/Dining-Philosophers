@@ -1,11 +1,11 @@
 make --dry-run --always-make --keep-going --print-directory
 make: Entering directory `/Users/rriyas/Documents/Cursus/Dining-Philosophers'
 gcc    -c -o main.o main.c
- 
 gcc    -c -o parse.o parse.c
 gcc    -c -o ft_printf.o ft_printf.c
 gcc    -c -o ft_printf_utils.o ft_printf_utils.c
 ar rcs libftprintf.a ft_printf.o ft_printf_utils.o
 gcc -pthread main.o parse.o libftprintf.a -o philo
+ 
 make: Leaving directory `/Users/rriyas/Documents/Cursus/Dining-Philosophers'
  
