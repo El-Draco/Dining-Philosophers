@@ -6,67 +6,85 @@
 /*   By: rriyas <rriyas@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/20 15:44:00 by rriyas            #+#    #+#             */
-/*   Updated: 2022/07/25 18:23:18 by rriyas           ###   ########.fr       */
+/*   Updated: 2022/09/23 19:06:40 by rriyas           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "philosophers.h"
+#include "ft_philosophers.h"
 
-int	skip_beg(char *str, int *neg)
+int	skip_beg(char *str)
 {
 	int	i;
 
 	i = 0;
 	while (str[i] == ' ')
 		i++;
-	if (str[i] == '-')
-	{
-		*neg *= -1;
-		i++;
-	}
-	else if (str[i] == '+')
-		i++;
+	if (str[i] < '0' || str[i] > '9')
+		return (-1);
 	return (i);
 }
 
-long	ft_atoi(char *str, int *flag)
+int	ft_atoi(char *str)
 {
 	long	num;
 	int		i;
-	int		neg;
 
 	num = 0;
-	neg = 1;
-	i = skip_beg(str, &neg);
+	i = skip_beg(str);
+	if (i == -1)
+		return (-1);
 	if (str[i] && str[i] != ' ')
 	{
 		while (str[i] && str[i] != ' ')
 		{
 			if (!(str[i] >= '0' && str[i] <= '9'))
-				*flag = -1;
+				return (-1);
 			num = num * 10 + (str[i++] - '0');
 		}
 	}
 	else
-		*flag = -1;
-	return (neg * num);
+		return (-1);
+	if (num > 2147483647)
+		return (-1);
+	return (num);
 }
 
-int parse_args(int argc, char **argv, t_dna *d)
+int	valid_args(t_dna *d, int argc)
 {
-	int	flag;
+	int	error;
 
-	flag = 1;
+	error = 1;
+	if (d->gene_pool <= 0)
+		error = -1;
+	if (d->time_to_die == -1)
+		error = -1;
+	if (d->time_to_eat == -1)
+		error = -1;
+	if (d->time_to_sleep == -1)
+		error = -1;
+	if (argc == 6 && d->meals == -1)
+		error = -1;
+	if (error == 1)
+		return (1);
+	if (d->gene_pool != 0 && error == -1)
+		printf("Invalid arguments passed!\n");
+	return (-1);
+}
+
+int	parse_args(int argc, char **argv, t_dna *d)
+{
 	if (argc < 5 || argc > 6)
 		return (-1);
 	else if (argc <= 6)
 	{
-		d->gene_pool = ft_atoi(argv[1], &flag);
-		d->time_to_die = ft_atoi(argv[2], &flag);
-		d->time_to_eat = ft_atoi(argv[3], &flag) ;
-		d->time_to_sleep = ft_atoi(argv[4], &flag);
+		d->gene_pool = ft_atoi(argv[1]);
+		d->time_to_die = ft_atoi(argv[2]);
+		d->time_to_eat = ft_atoi(argv[3]);
+		d->time_to_sleep = ft_atoi(argv[4]);
 		if (argc == 6)
-			d->meals = ft_atoi(argv[5], &flag);
+			d->meals = ft_atoi(argv[5]);
+		else
+			d->meals = -1;
 	}
-	return flag;
+	return (valid_args(d, argc));
 }
