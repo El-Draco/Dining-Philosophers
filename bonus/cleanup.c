@@ -6,7 +6,7 @@
 /*   By: rriyas <rriyas@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/12 12:48:21 by rriyas            #+#    #+#             */
-/*   Updated: 2023/12/01 14:57:15 by rriyas           ###   ########.fr       */
+/*   Updated: 2023/12/01 19:33:15 by rriyas           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,19 +24,6 @@ int ft_strlen(const char *str)
 	return (i);
 }
 
-/**
- * @brief					Function to end simulation when the need arises
- *
- * @param	p				Pointer to philospher calling the function
- */
-void	kill_simulation(t_philo *p)
-{
-	// pthread_mutex_lock(p->time_stone);
-	sem_wait(p->time_stone_sem);
-	*(p->sim_status) = 0;
-	sem_post(p->time_stone_sem);
-	// pthread_mutex_unlock(p->time_stone);
-}
 
 /**
  * @brief					Function to destroy all the mutexes in the program
@@ -48,19 +35,17 @@ void	destroy_semaphores(t_table *table, int n)
 {
 	int	i;
 
-	(void)table;
+	i = 0;
+	while (i < n)
+		kill(table->philos[i++]->pid, SIGKILL);
 	i = 0;
 	while (i < n)
 	{
-		// sem_unlink((table->forks[i]->fork_sem));
-		sem_unlink(get_sem_name("/fork_", i));
-		// sem_unlink((table->philos[i]->soul));
-		sem_unlink(get_sem_name("/philo_", i));
-
+		sem_close(table->philos[i]->soul);
 		i++;
 	}
-	// sem_unlink(&(table->time_stone_mutex));
-	sem_unlink(get_sem_name("/time_stone", i));
+	sem_close(table->forks);
+	sem_close(table->time_stone_sem);
 }
 
 /**
@@ -79,13 +64,9 @@ void	clean_table(t_table *table, int n)
 	destroy_semaphores(table, n);
 	while (i < n)
 	{
-		free(table->forks[i]);
 		free(table->philos[i]);
 		i++;
 	}
-	free(table->time_stone_status);
-	free(table->forks);
-	free(table->hungry);
 	free(table->philos);
 	free(table);
 }

@@ -6,47 +6,12 @@
 /*   By: rriyas <rriyas@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/21 15:58:22 by rriyas            #+#    #+#             */
-/*   Updated: 2023/12/01 14:59:15 by rriyas           ###   ########.fr       */
+/*   Updated: 2023/12/01 21:11:21 by rriyas           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_philosophers.h"
 
-/**
- * @brief					Function for the main thread to check for any deaths in the sim
- *
- * @param	table			Struct with access to all philosphers
- * @param	dna				Common shared data for all the philosphers
- */
-void	call_waiter(t_table *table, t_dna dna)
-{
-	t_philo	**p;
-	int		ate;
-	int		i;
-
-	p = table->philos;
-	ate = 0;
-	while (check_sim_status(p[0]) != -1 && ate != 1)
-	{
-		i = 0;
-		ate = 1;
-		usleep(100);
-		while (check_sim_status(p[0]) != -1 && i < dna.gene_pool)
-		{
-			// pthread_mutex_lock(&p[i]->soul);
-			sem_wait(p[i]->soul);
-			if (p[i]->plates < dna.meals || dna.meals == -1)
-				ate &= 0;
-			sem_post(p[i]->soul);
-			// pthread_mutex_unlock(&p[i]->soul);
-			if (check_death(p[i]) == -1)
-				kill_simulation(p[i]);
-			i++;
-		}
-		if (ate == 1 && dna.meals != -1)
-			kill_simulation(p[0]);
-	}
-}
 
 /**
  * @brief 					Function to let the philospher eat and reset time of last meal
@@ -54,37 +19,25 @@ void	call_waiter(t_table *table, t_dna dna)
  * @param p					Pointer to array of philosophers
  * @param id				ID of the philosopher about to eat
  */
-void	eat(t_philo **p, int id)
+void	eat(t_philo *p)
 {
 	long	time_start;
 	long	timer;
 
 	timer = 0;
 	time_start = time_stamp();
-	// pthread_mutex_lock(&p[id]->soul)
-	sem_wait(p[id]->soul);
-	p[id]->last_meal = time_start;
-	sem_post(p[id]->soul);
-	// pthread_mutex_unlock(&p[id]->soul);
-	if (check_death(p[id]) == -1 || check_sim_status(p[id]) == -1)
-		return ;
-	console_log(p[id], "is eating\n");
-	while (timer < p[id]->dna.time_to_eat && check_sim_status(p[id]) != -1)
+	sem_wait(p->soul);
+	p->last_meal = time_start;
+	sem_post(p->soul);
+	console_log(p, "is eating\n");
+	while (timer < p->dna.time_to_eat)
 	{
 		timer = time_stamp() - time_start;
-		if (check_death(p[id]) == -1)
-		{
-			unlock_forks(p[id]->forks, id, p[id]->dna.gene_pool);
-			kill_simulation(p[id]);
-			break ;
-		}
 		usleep(100);
 	}
-	// pthread_mutex_lock(&p[id]->soul);
-	sem_wait(p[id]->soul);
-	p[id]->plates++;
-	sem_post(p[id]->soul);
-	// pthread_mutex_unlock(&p[id]->soul);
+	sem_wait(p->soul);
+	p->plates++;
+	sem_post(p->soul);
 }
 
 /**
@@ -96,26 +49,87 @@ void	eat(t_philo **p, int id)
  * 							printing logs
  * @param dna				Common simulation data for all philosphers
  */
-void	p_sleep(t_philo **p, int id, t_dna dna)
+void	p_sleep(t_philo *p)
 {
 	long	slept_for;
 	long	t_start;
 
 	t_start = time_stamp();
 	slept_for = 0;
-	if (check_death(p[id]) == -1)
-		return ;
-	console_log(p[id], "is sleeping\n");
-	while (slept_for < dna.time_to_sleep && check_sim_status(p[id]) != -1)
+	console_log(p, "is sleeping\n");
+	while (slept_for < p->dna.time_to_sleep)
 	{
 		slept_for = time_stamp() - t_start;
-		if (check_death(p[id]) == -1)
-		{
-			kill_simulation(p[id]);
-			return ;
-		}
 		usleep(100);
 	}
+}
+
+int	get_min_interval(t_dna dna)
+{
+	int min;
+
+	min = dna.time_to_eat;
+	if (min < dna.time_to_sleep)
+		min = dna.time_to_sleep;
+	return (min);
+}
+
+void	*ft_check_death(void *arg)
+{
+	t_philo *philo;
+	long t_now;
+
+	philo = (t_philo *)arg;
+	while (2)
+	{
+		sem_wait(philo->soul);
+		t_now = time_stamp();
+		if (t_now - philo->last_meal > philo->dna.time_to_die)
+		{
+			philo->alive = 0;
+			philo->dead = t_now - philo->birth;
+			sem_post(philo->soul);
+			sem_post(philo->sim_status_sem);
+			break ;
+		}
+		sem_post(philo->soul);
+		sem_wait(philo->soul);
+		if (philo->plates >= philo->dna.meals && philo->dna.meals != -1)
+		{
+			philo->done = 1;
+			sem_post(philo->sim_status_sem);
+			sem_post(philo->soul);
+			break ;
+		}
+		sem_post(philo->soul);
+	}
+	return (NULL);
+}
+
+void acquire_forks(t_philo *philo)
+{
+	sem_wait(philo->forks);
+	console_log(philo, "has picked up a fork\n");
+	sem_wait(philo->forks);
+	console_log(philo, "has picked up a fork\n");
+}
+
+void release_forks(t_philo *philo)
+{
+	sem_post(philo->forks);
+	sem_post(philo->forks);
+}
+
+int	gave_up_on_life(t_philo *philo)
+{
+	sem_wait(philo->soul);
+	if (philo->done == 1 || philo->dead != 0)
+	{
+		sem_post(philo->soul);
+		return (1);
+	}
+	sem_post(philo->soul);
+	return (0);
 }
 
 /**
@@ -124,57 +138,76 @@ void	p_sleep(t_philo **p, int id, t_dna dna)
  * @param	arg				Data peratining to a particular philospher (thread)
  * @return	void*			Return value (always NULL)
  */
-void	*life_cycle(void *arg)
+void *life_cycle(t_philo *philo)
 {
-	t_philo	*p;
-	int		status;
+	pthread_t	death;
 
-	p = ((t_philo *)arg);
-	while (check_death(p) != -1 && check_sim_status(p) != -1)
+	pthread_create(&death, NULL, ft_check_death, philo);
+	pthread_detach(death);
+	while (2)
 	{
-		status = 0;
-		while (status != 1 && check_death(p) != -1 && check_sim_status(p) != -1)
-		{
-			usleep(50);
-			status = try_to_eat(p->others, p->forks, p->id, p->dna);
-			if (status == -1)
-			{
-				kill_simulation(p);
-				return (NULL);
-			}
-		}
-		if (check_death(p) == -1 || check_sim_status(p) == -1)
-			break ;
-		p_sleep(&*(p->others), p->id, p->dna);
-		console_log(p, "is thinking\n");
+		if (gave_up_on_life(philo))
+			return (NULL);
+		acquire_forks(philo);
+		eat(philo);
+		release_forks(philo);
+		if (gave_up_on_life(philo))
+			return (NULL);
+		p_sleep(philo);
+		console_log(philo, "is thinking\n");
 	}
 	return (NULL);
 }
 
+
+void create_philos(t_table *table, int n)
+{
+	int i;
+
+	i = 0;
+	while (i < n)
+	{
+		usleep(50);
+		table->philos[i]->pid = fork();
+		if (table->philos[i]->pid == 0)
+		{
+			life_cycle(table->philos[i]);
+			exit(0);
+		}
+		i++;
+	}
+}
+
+void	call_waiter(t_table *table,	int n)
+{
+	int i;
+
+	i = 0;
+	if (n == -1)
+		sem_wait(table->sim_status_sem);
+	else
+	{
+		while (i < n)
+		{
+			sem_wait(table->sim_status_sem);
+			i++;
+		}
+	}
+}
+
 int	main(int argc, char **argv)
 {
-	int		i;
 	t_dna	dna;
 	t_table	*table;
 	t_philo	**philos;
 
 	if (parse_args(argc, argv, &dna) == -1)
-	{
 		return (0);
-	}
 	table = initialize_simulation(&dna);
 	philos = table->philos;
-	i = -1;
-	while (++i < dna.gene_pool)
-	{
-		pthread_create(&(philos[i]->life), NULL, &life_cycle,
-			(void **)(&*(philos[i])));
-		usleep(50);
-	}
-	call_waiter(table, dna);
-	i = -1;
-	while (++i < dna.gene_pool)
-		pthread_join(philos[i]->life, NULL);
+	sem_wait(table->sim_status_sem);
+	create_philos(table, dna.gene_pool);
+	call_waiter(table, dna.gene_pool);
 	clean_table(table, dna.gene_pool);
 	return (0);
 }

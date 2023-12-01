@@ -6,7 +6,7 @@
 /*   By: rriyas <rriyas@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/20 15:44:00 by rriyas            #+#    #+#             */
-/*   Updated: 2023/12/01 14:41:55 by rriyas           ###   ########.fr       */
+/*   Updated: 2023/12/01 21:16:07 by rriyas           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,5 +86,7 @@ int	parse_args(int argc, char **argv, t_dna *d)
 		else
 			d->meals = -1;
 	}
+	if (d->meals == 0)
+		return (-1);
 	return (valid_args(d, argc));
 }
