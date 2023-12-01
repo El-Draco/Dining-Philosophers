@@ -6,7 +6,7 @@
 /*   By: rriyas <rriyas@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/21 15:58:22 by rriyas            #+#    #+#             */
-/*   Updated: 2023/12/01 21:11:21 by rriyas           ###   ########.fr       */
+/*   Updated: 2023/12/01 22:56:24 by rriyas           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,6 +90,7 @@ void	*ft_check_death(void *arg)
 			philo->dead = t_now - philo->birth;
 			sem_post(philo->soul);
 			sem_post(philo->sim_status_sem);
+			// sem_post(philo->test_sem);
 			break ;
 		}
 		sem_post(philo->soul);
@@ -167,27 +168,27 @@ void create_philos(t_table *table, int n)
 	i = 0;
 	while (i < n)
 	{
-		usleep(50);
 		table->philos[i]->pid = fork();
 		if (table->philos[i]->pid == 0)
 		{
 			life_cycle(table->philos[i]);
 			exit(0);
 		}
+		usleep(50);
 		i++;
 	}
 }
 
-void	call_waiter(t_table *table,	int n)
+void	call_waiter(t_table *table,	t_dna dna)
 {
 	int i;
 
 	i = 0;
-	if (n == -1)
+	if (dna.meals == -1)
 		sem_wait(table->sim_status_sem);
 	else
 	{
-		while (i < n)
+		while (i < dna.gene_pool)
 		{
 			sem_wait(table->sim_status_sem);
 			i++;
@@ -199,15 +200,12 @@ int	main(int argc, char **argv)
 {
 	t_dna	dna;
 	t_table	*table;
-	t_philo	**philos;
 
 	if (parse_args(argc, argv, &dna) == -1)
 		return (0);
 	table = initialize_simulation(&dna);
-	philos = table->philos;
-	sem_wait(table->sim_status_sem);
 	create_philos(table, dna.gene_pool);
-	call_waiter(table, dna.gene_pool);
+	call_waiter(table, dna);
 	clean_table(table, dna.gene_pool);
 	return (0);
 }

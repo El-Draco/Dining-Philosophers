@@ -6,7 +6,7 @@
 /*   By: rriyas <rriyas@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/12 12:44:31 by rriyas            #+#    #+#             */
-/*   Updated: 2023/12/01 21:11:04 by rriyas           ###   ########.fr       */
+/*   Updated: 2023/12/01 23:05:11 by rriyas           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,7 @@ t_philo	**prep_philos(t_dna *dna)
 		philos[i]->plates = 0;
 		philos[i]->birth = time_now;
 		philos[i]->dead = 0;
+		philos[i]->done = 0;
 	}
 	return (philos);
 }
@@ -68,23 +69,23 @@ void	initialize_semaphores(t_table *table, t_dna *dna)
 	int	i;
 
 	i = -1;
-
+	char *temp;
 	sem_unlink("time_stone_sem");
 	sem_unlink("sim_status_sem");
 	sem_unlink("forks");
 	table->time_stone_sem = sem_open("time_stone_sem", O_CREAT, 0600, 1);
-	if (dna->meals == -1)
-		table->sim_status_sem = sem_open("sim_status_sem", O_CREAT, 0600, 1);
-	else
-		table->sim_status_sem = sem_open("sim_status_sem", O_CREAT, 0600, dna->meals);
+	table->sim_status_sem = sem_open("sim_status_sem", O_CREAT, 0600, 0);
 	table->forks = sem_open("forks", O_CREAT, 0600, dna->gene_pool);
 	while (++i < dna->gene_pool)
 	{
-		sem_unlink(get_sem_name("philo_", i));
-		table->philos[i]->soul = sem_open(get_sem_name("philo_", i), O_CREAT, 0600, 1);
+		temp = get_sem_name("philo_", i);
+		sem_unlink(temp);
+		table->philos[i]->soul = sem_open(temp, O_CREAT, 0600, 1);
+		free(temp);
 		table->philos[i]->time_stone_sem = table->time_stone_sem;
 		table->philos[i]->sim_status_sem = table->sim_status_sem;
 		table->philos[i]->forks = table->forks;
+
 	}
 }
 
@@ -97,9 +98,7 @@ void	initialize_semaphores(t_table *table, t_dna *dna)
 t_table	*initialize_simulation(t_dna *dna)
 {
 	t_table	*table;
-	int		i;
 
-	i = -1;
 	table = malloc(sizeof(t_table));
 	table->philos = prep_philos(dna);
 	initialize_semaphores(table, dna);

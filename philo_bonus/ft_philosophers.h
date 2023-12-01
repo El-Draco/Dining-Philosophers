@@ -6,7 +6,7 @@
 /*   By: rriyas <rriyas@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/23 19:03:07 by rriyas            #+#    #+#             */
-/*   Updated: 2023/12/01 21:02:27 by rriyas           ###   ########.fr       */
+/*   Updated: 2023/12/01 22:36:13 by rriyas           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,8 @@
 # include <stdlib.h>
 # include <sys/time.h>
 # include <signal.h>
+ #include <fcntl.h>           /* For O_* constants */
+#include <sys/stat.h>        /* For mode constants */
 
 typedef struct s_dna
 {
@@ -41,6 +43,7 @@ typedef struct s_philo
 	sem_t			*forks;
 	sem_t			*time_stone_sem;
 	sem_t			*sim_status_sem;
+	sem_t			*test_sem;
 	t_dna			dna;
 	long			last_meal;
 	long			birth;
@@ -54,6 +57,7 @@ typedef struct s_table
 	t_philo			**philos;
 	sem_t			*time_stone_sem;
 	sem_t			*sim_status_sem;
+	sem_t			*test_sem;
 	sem_t			*forks;
 
 }	t_table;
@@ -92,7 +96,7 @@ void	clean_table(t_table *table, int n);
 void	log_philo_death(t_philo **philos, int n);
 
 // main.c
-void	call_waiter(t_table *table, int times_to_eat);
+void	call_waiter(t_table *table, t_dna dna);
 void	eat(t_philo *p);
 void	p_sleep(t_philo *p);
 void	*life_cycle(t_philo *arg);

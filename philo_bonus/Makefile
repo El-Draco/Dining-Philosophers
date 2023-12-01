@@ -6,23 +6,23 @@
 #    By: rriyas <rriyas@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/09/23 15:21:44 by rriyas            #+#    #+#              #
-#    Updated: 2022/09/23 15:50:14 by rriyas           ###   ########.fr        #
+#    Updated: 2023/12/01 21:24:13 by rriyas           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-NAME		=	philo
+NAME		=	philo_bonus
 
 CC			=	gcc
 RM			=	rm -rf
-SRCS		=	main.c parse.c initialize.c philo_utils.c eat.c cleanup.c
+SRCS		=	main.c parser.c parser_utils.c initialize.c philo_utils.c cleanup.c
 OBJS		=	${SRCS:.c=.o}
 
 
-CFLAGS	=	-Wall -Werror -Wextra
+CFLAGS	=	-Wall -Werror -Wextra -g3
 
 
 $(NAME):	${OBJS}
-		${CC} -pthread ${OBJS} -o philo
+		${CC} -pthread ${OBJS} -o philo_bonus
 
 all:	${NAME}
 

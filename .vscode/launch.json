@@ -8,9 +8,9 @@
 			"name": "C++ Launch",
 			"type": "cppdbg",
 			"request": "launch",
-			"program": "${workspaceFolder}/bonus/philo",
+			"program": "${workspaceFolder}/philo_bonus/philo_bonus",
 			"args": [
-				"4", "800", "200", "200", "0"
+				"1", "1000", "100", "100"
 			],
 			"environment": [],
 			"cwd": "${fileDirname}",

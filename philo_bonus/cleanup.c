@@ -6,7 +6,7 @@
 /*   By: rriyas <rriyas@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/12 12:48:21 by rriyas            #+#    #+#             */
-/*   Updated: 2023/12/01 19:33:15 by rriyas           ###   ########.fr       */
+/*   Updated: 2023/12/01 23:05:04 by rriyas           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,6 +46,7 @@ void	destroy_semaphores(t_table *table, int n)
 	}
 	sem_close(table->forks);
 	sem_close(table->time_stone_sem);
+	sem_close(table->sim_status_sem);
 }
 
 /**
@@ -69,6 +70,7 @@ void	clean_table(t_table *table, int n)
 	}
 	free(table->philos);
 	free(table);
+
 }
 
 /**
