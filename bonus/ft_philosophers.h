@@ -6,7 +6,7 @@
 /*   By: rriyas <rriyas@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/23 19:03:07 by rriyas            #+#    #+#             */
-/*   Updated: 2023/11/30 22:06:03 by rriyas           ###   ########.fr       */
+/*   Updated: 2023/12/01 14:54:37 by rriyas           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ typedef struct s_fork
 {
 	int				fork;
 	pthread_mutex_t	fork_mutex;
-	sem_t			fork_sem;
+	sem_t			*fork_sem;
 }	t_fork;
 
 typedef struct s_philo
@@ -46,7 +46,7 @@ typedef struct s_philo
 	pthread_t		life;
 
 	// pthread_mutex_t	soul;
-	sem_t			soul;
+	sem_t			*soul;
 
 	pthread_mutex_t *time_stone;
 	sem_t			*time_stone_sem;
@@ -72,16 +72,24 @@ typedef struct s_table
 }	t_table;
 
 // parse.c
+char	*ft_strjoin(char const *s1, char const *s2);
 int		skip_beg(char *str);
 int		ft_atoi(char *str);
 int		parse_args(int argc, char **argv, t_dna *d);
+
+//parser_utils.c:
+void ft_bzero(void *s, size_t n);
+void *ft_calloc(size_t count, size_t size);
+char *ft_itoa(int n);
+char *ft_strjoin(char const *s1, char const *s2);
 
 // initialize.c
 t_philo	**prep_philos(t_dna *dna, t_fork **forks, int hungry[],
 			int *sim_status);
 t_table	*prepare_table(t_dna *dna);
-void	initialize_mutexes(t_table *table, t_dna *dna);
+void	initialize_semaphores(t_table *table, t_dna *dna);
 t_table	*initialize_simulation(t_dna *dna);
+char *get_sem_name(char *sem_name, int id);
 
 // philo_utils.c
 long	time_stamp(void);
@@ -98,8 +106,9 @@ int		pick_up_forks(t_philo **p, t_fork **f, int id, t_dna dna);
 int		try_to_eat(t_philo **p, t_fork **f, int id, t_dna dna);
 
 // cleanup.c
+int		ft_strlen(const char *str);
 void	kill_simulation(t_philo *p);
-void	destroy_mutexes(t_table *table, int n);
+void	destroy_semaphores(t_table *table, int n);
 void	clean_table(t_table *table, int n);
 void	log_philo_death(t_philo **philos, int n);
 

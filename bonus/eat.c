@@ -6,7 +6,7 @@
 /*   By: rriyas <rriyas@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/12 12:51:02 by rriyas            #+#    #+#             */
-/*   Updated: 2023/11/30 21:56:09 by rriyas           ###   ########.fr       */
+/*   Updated: 2023/12/01 14:49:38 by rriyas           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,21 +33,21 @@ int	check_left_and_right_forks(t_fork **f, int id, int n)
 		second = first;
 		first = (id + 1) % n;
 	}
-	sem_wait(&f[first]->fork_mutex);
-	sem_wait(&f[second]->fork_mutex);
+	sem_wait(f[first]->fork_sem);
+	sem_wait(f[second]->fork_sem);
 	// pthread_mutex_lock(&f[first]->fork_mutex);
 	// pthread_mutex_lock(&(f[second]->fork_mutex));
 	if (f[first]->fork == 1 && f[second]->fork == 1)
 	{
 		lock_forks(f, id, n);
-		sem_post(&f[second]->fork_mutex);
-		sem_post(&f[first]->fork_mutex);
+		sem_post(f[second]->fork_sem);
+		sem_post(f[first]->fork_sem);
 		// pthread_mutex_unlock(&(f[second]->fork_mutex));
 		// pthread_mutex_unlock(&f[first]->fork_mutex);
 		return (1);
 	}
-	sem_post(&f[second]->fork_mutex);
-	sem_post(&f[first]->fork_mutex);
+	sem_post(f[second]->fork_sem);
+	sem_post(f[first]->fork_sem);
 	// pthread_mutex_unlock(&f[second]->fork_mutex);
 	// pthread_mutex_unlock(&f[first]->fork_mutex);
 	return (0);
@@ -87,14 +87,14 @@ void	unlock_forks(t_fork **f, int id, int n)
 	first = id;
 	second = (id + 1) % n;
 	// pthread_mutex_lock(&f[first]->fork_mutex);
-	sem_wait(&f[first]->fork_mutex);
+	sem_wait(f[first]->fork_sem);
 	f[first]->fork = 1;
-	sem_post(&f[first]->fork_mutex);
+	sem_post(f[first]->fork_sem);
 	// pthread_mutex_unlock(&f[first]->fork_mutex);
 	// pthread_mutex_lock(&f[second]->fork_mutex);
-	sem_wait(&f[second]->fork_mutex);
+	sem_wait(f[second]->fork_sem);
 	f[second]->fork = 1;
-	sem_post(&f[second]->fork_mutex);
+	sem_post(f[second]->fork_sem);
 	// pthread_mutex_unlock(&f[second]->fork_mutex);
 }
 

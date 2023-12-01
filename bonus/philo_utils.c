@@ -6,7 +6,7 @@
 /*   By: rriyas <rriyas@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/12 12:46:47 by rriyas            #+#    #+#             */
-/*   Updated: 2023/11/30 21:59:39 by rriyas           ###   ########.fr       */
+/*   Updated: 2023/12/01 14:50:28 by rriyas           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,24 +41,24 @@ int	check_death(t_philo *p)
 	long	t_now;
 
 	// pthread_mutex_lock(&p->soul);
-	sem_wait(&p[i]->soul);
+	sem_wait(p->soul);
 	t_now = time_stamp();
 	if (t_now - p->last_meal > p->dna.time_to_die)
 	{
 		p->alive = 0;
 		p->dead = t_now - p->birth;
-		sem_post(&p[i]->soul);
+		sem_post(p->soul);
 		// pthread_mutex_unlock(&p->soul);
 		kill_simulation(p);
 		return (-1);
 	}
 	if ((p->alive) == 0 || (p->plates > p->dna.meals && p->dna.meals != -1))
 	{
-		sem_post(&p[i]->soul);
+		sem_post(p->soul);
 		// pthread_mutex_unlock(&p->soul);
 		return (-1);
 	}
-	sem_post(&p[i]->soul);
+	sem_post(p->soul);
 	// pthread_mutex_unlock(&p->soul);
 	return (0);
 }

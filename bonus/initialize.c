@@ -6,7 +6,7 @@
 /*   By: rriyas <rriyas@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/12 12:44:31 by rriyas            #+#    #+#             */
-/*   Updated: 2023/11/30 23:26:11 by rriyas           ###   ########.fr       */
+/*   Updated: 2023/12/01 14:57:36 by rriyas           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,27 +73,41 @@ t_table	*prepare_table(t_dna *dna)
 	return (table);
 }
 
+char	*get_sem_name(char *sem_name, int id)
+{
+	char *ret;
+	char *num;
+
+	num = ft_itoa(id);
+	ret = ft_strjoin(sem_name, num);
+	free(num);
+	return (ret);
+}
+
 /**
  * @brief					Function to initialize all mutexes in the program
  *
  * @param table				Struct containing all required simulation data
  * @param dna				Common simulation data for all philosphers
  */
-void	initialize_mutexes(t_table *table, t_dna *dna)
+void	initialize_semaphores(t_table *table, t_dna *dna)
 {
 	int	i;
 
 	i = -1;
 	// pthread_mutex_init(&(table->time_stone_mutex), NULL);
-	sem_init(&(table->time_stone_sem), 1, dna->gene_pool);
+	// sem_init(&(table->time_stone_sem), 1, dna->gene_pool);
+	table->time_stone_sem = sem_open("/time_stone", O_CREAT, 0644, 1);
 	while (++i < dna->gene_pool)
 	{
-		sem_init(&(table->forks[i]->fork_sem), 1, dna->gene_pool);
-		sem_init(&(table->philos[i]->soul), 1, dna->gene_pool);
+		table->forks[i]->fork_sem = sem_open(get_sem_name("/fork_", i), O_CREAT, 0644, 1);
+		table->philos[i]->soul = sem_open(get_sem_name("/philo_", i), O_CREAT, 0644, 1);
+		// sem_init(&(table->forks[i]->fork_sem), 1, dna->gene_pool);
+		// sem_init(&(table->philos[i]->soul), 1, dna->gene_pool);
 		// pthread_mutex_init(&(table->forks[i]->fork_mutex), NULL);
 		// pthread_mutex_init(&(table->philos[i]->soul), NULL);
 		// table->philos[i]->time_stone = &table->time_stone_mutex;
-		table->philos[i]->time_stone_sem = &table->time_stone_sem;
+		table->philos[i]->time_stone_sem = table->time_stone_sem;
 	}
 }
 
@@ -120,6 +134,6 @@ t_table	*initialize_simulation(t_dna *dna)
 	table->time_stone_status = sim_status;
 	*(table->time_stone_status) = 1;
 	table->philos = prep_philos(dna, table->forks, hungry, sim_status);
-	initialize_mutexes(table, dna);
+	initialize_semaphores(table, dna);
 	return (table);
 }

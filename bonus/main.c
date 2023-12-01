@@ -6,7 +6,7 @@
 /*   By: rriyas <rriyas@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/21 15:58:22 by rriyas            #+#    #+#             */
-/*   Updated: 2023/11/30 21:33:46 by rriyas           ###   ########.fr       */
+/*   Updated: 2023/12/01 14:59:15 by rriyas           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,10 +34,10 @@ void	call_waiter(t_table *table, t_dna dna)
 		while (check_sim_status(p[0]) != -1 && i < dna.gene_pool)
 		{
 			// pthread_mutex_lock(&p[i]->soul);
-			sem_wait(&p[i]->soul);
+			sem_wait(p[i]->soul);
 			if (p[i]->plates < dna.meals || dna.meals == -1)
 				ate &= 0;
-			sem_post(&p[i]->soul);
+			sem_post(p[i]->soul);
 			// pthread_mutex_unlock(&p[i]->soul);
 			if (check_death(p[i]) == -1)
 				kill_simulation(p[i]);
@@ -62,9 +62,9 @@ void	eat(t_philo **p, int id)
 	timer = 0;
 	time_start = time_stamp();
 	// pthread_mutex_lock(&p[id]->soul)
-	sem_wait(&p[id]->soul);
+	sem_wait(p[id]->soul);
 	p[id]->last_meal = time_start;
-	sem_post(&p[id]->soul);
+	sem_post(p[id]->soul);
 	// pthread_mutex_unlock(&p[id]->soul);
 	if (check_death(p[id]) == -1 || check_sim_status(p[id]) == -1)
 		return ;
@@ -81,9 +81,9 @@ void	eat(t_philo **p, int id)
 		usleep(100);
 	}
 	// pthread_mutex_lock(&p[id]->soul);
-	sem_wait(&p[id]->soul);
+	sem_wait(p[id]->soul);
 	p[id]->plates++;
-	sem_post(&p[id]->soul);
+	sem_post(p[id]->soul);
 	// pthread_mutex_unlock(&p[id]->soul);
 }
 
