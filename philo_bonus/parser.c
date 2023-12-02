@@ -6,13 +6,13 @@
 /*   By: rriyas <rriyas@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/20 15:44:00 by rriyas            #+#    #+#             */
-/*   Updated: 2023/12/02 13:44:43 by rriyas           ###   ########.fr       */
+/*   Updated: 2023/12/02 15:52:50 by rriyas           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_philosophers.h"
 
-int	ft_strlen(const char *str)
+int	ft_strlen_(const char *str)
 {
 	int	i;
 

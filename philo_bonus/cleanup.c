@@ -6,7 +6,7 @@
 /*   By: rriyas <rriyas@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/12 12:48:21 by rriyas            #+#    #+#             */
-/*   Updated: 2023/12/02 13:59:11 by rriyas           ###   ########.fr       */
+/*   Updated: 2023/12/02 18:13:46 by rriyas           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@ void	destroy_semaphores(t_table *table, int n)
 	i = 0;
 	while (i < n)
 		kill(table->philos[i++]->pid, SIGKILL);
+	usleep(500);
 	i = 0;
 	while (i < n)
 	{
@@ -48,8 +49,8 @@ void	clean_table(t_table *table, int n)
 	int	i;
 
 	i = 0;
-	log_philo_death(table->philos, n);
 	destroy_semaphores(table, n);
+	log_philo_death(table->philos, n);
 	while (i < n)
 	{
 		free(table->philos[i]);
@@ -72,7 +73,7 @@ void	log_philo_death(t_philo **philos, int n)
 	i = 0;
 	while (i < n)
 	{
-		if (philos[i]->alive == 0)
+		if (philos[i]->alive == 0 || philos[i]->dead != 0)
 		{
 			printf("%lu \t%d has died\n", philos[i]->dead, i + 1);
 			break ;

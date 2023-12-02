@@ -6,7 +6,7 @@
 /*   By: rriyas <rriyas@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/23 19:03:07 by rriyas            #+#    #+#             */
-/*   Updated: 2023/12/02 13:59:42 by rriyas           ###   ########.fr       */
+/*   Updated: 2023/12/02 17:36:26 by rriyas           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,7 +87,7 @@ int		check_sim_status(t_philo *p);
 void	console_log(t_philo *p, char *action);
 
 // cleanup.c
-int		ft_strlen(const char *str);
+int		ft_strlen_(const char *str);
 void	kill_simulation(t_philo *p);
 void	destroy_semaphores(t_table *table, int n);
 void	clean_table(t_table *table, int n);
@@ -95,6 +95,7 @@ void	log_philo_death(t_philo **philos, int n);
 
 // main.c
 void	call_waiter(t_table *table, t_dna dna);
+void	*ft_check_death(void *arg);
 void	eat(t_philo *p);
 void	p_sleep(t_philo *p);
 void	*life_cycle(t_philo *arg);

@@ -6,7 +6,7 @@
 /*   By: rriyas <rriyas@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/01 14:40:51 by rriyas            #+#    #+#             */
-/*   Updated: 2023/12/02 14:00:00 by rriyas           ###   ########.fr       */
+/*   Updated: 2023/12/02 15:51:33 by rriyas           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ void	*ft_calloc(size_t count, size_t size)
 	return (temp);
 }
 
-static int	num_size(int n)
+int	num_size_(int n)
 {
 	int	i;
 
@@ -62,7 +62,7 @@ char	*ft_itoa(int n)
 	long	nb;
 
 	nb = n;
-	end = num_size(n);
+	end = num_size_(n);
 	s = ft_calloc(1 + end, sizeof(char));
 	if (!s)
 		return (s);
@@ -90,9 +90,9 @@ char	*ft_strjoin(char const *s1, char const *s2)
 
 	if (!s1 || !s2)
 		return (NULL);
-	l1 = ft_strlen(s1);
+	l1 = ft_strlen_(s1);
 	i = 0;
-	temp = malloc(l1 + ft_strlen(s2) + 1);
+	temp = malloc(l1 + ft_strlen_(s2) + 1);
 	if (!temp)
 		return (NULL);
 	while (s1[i])
