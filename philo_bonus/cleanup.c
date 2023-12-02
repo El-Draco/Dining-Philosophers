@@ -6,24 +6,11 @@
 /*   By: rriyas <rriyas@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/12 12:48:21 by rriyas            #+#    #+#             */
-/*   Updated: 2023/12/01 23:05:04 by rriyas           ###   ########.fr       */
+/*   Updated: 2023/12/02 13:59:11 by rriyas           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_philosophers.h"
-
-int ft_strlen(const char *str)
-{
-	int i;
-
-	i = 0;
-	if (!str)
-		return (0);
-	while (str[i])
-		i++;
-	return (i);
-}
-
 
 /**
  * @brief					Function to destroy all the mutexes in the program
@@ -70,7 +57,6 @@ void	clean_table(t_table *table, int n)
 	}
 	free(table->philos);
 	free(table);
-
 }
 
 /**
@@ -92,5 +78,22 @@ void	log_philo_death(t_philo **philos, int n)
 			break ;
 		}
 		i++;
+	}
+}
+
+void	call_waiter(t_table *table, t_dna dna)
+{
+	int	i;
+
+	i = 0;
+	if (dna.meals == -1)
+		sem_wait(table->sim_status_sem);
+	else
+	{
+		while (i < dna.gene_pool)
+		{
+			sem_wait(table->sim_status_sem);
+			i++;
+		}
 	}
 }

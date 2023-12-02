@@ -6,7 +6,7 @@
 /*   By: rriyas <rriyas@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/12 12:44:31 by rriyas            #+#    #+#             */
-/*   Updated: 2023/12/01 23:05:11 by rriyas           ###   ########.fr       */
+/*   Updated: 2023/12/02 13:42:47 by rriyas           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,8 +49,8 @@ t_philo	**prep_philos(t_dna *dna)
 
 char	*get_sem_name(char *sem_name, int id)
 {
-	char *ret;
-	char *num;
+	char	*ret;
+	char	*num;
 
 	num = ft_itoa(id);
 	ret = ft_strjoin(sem_name, num);
@@ -66,10 +66,10 @@ char	*get_sem_name(char *sem_name, int id)
  */
 void	initialize_semaphores(t_table *table, t_dna *dna)
 {
-	int	i;
+	int		i;
+	char	*temp;
 
 	i = -1;
-	char *temp;
 	sem_unlink("time_stone_sem");
 	sem_unlink("sim_status_sem");
 	sem_unlink("forks");
@@ -85,7 +85,6 @@ void	initialize_semaphores(t_table *table, t_dna *dna)
 		table->philos[i]->time_stone_sem = table->time_stone_sem;
 		table->philos[i]->sim_status_sem = table->sim_status_sem;
 		table->philos[i]->forks = table->forks;
-
 	}
 }
 

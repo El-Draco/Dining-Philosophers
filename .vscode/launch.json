@@ -10,7 +10,7 @@
 			"request": "launch",
 			"program": "${workspaceFolder}/philo_bonus/philo_bonus",
 			"args": [
-				"1", "1000", "100", "100"
+				"4", "1000", "100", "100", "1"
 			],
 			"environment": [],
 			"cwd": "${fileDirname}",

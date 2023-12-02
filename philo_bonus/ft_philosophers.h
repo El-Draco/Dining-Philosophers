@@ -6,7 +6,7 @@
 /*   By: rriyas <rriyas@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/23 19:03:07 by rriyas            #+#    #+#             */
-/*   Updated: 2023/12/01 22:36:13 by rriyas           ###   ########.fr       */
+/*   Updated: 2023/12/02 13:59:42 by rriyas           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,8 +20,8 @@
 # include <stdlib.h>
 # include <sys/time.h>
 # include <signal.h>
- #include <fcntl.h>           /* For O_* constants */
-#include <sys/stat.h>        /* For mode constants */
+# include <fcntl.h>
+# include <sys/stat.h>
 
 typedef struct s_dna
 {
@@ -31,7 +31,6 @@ typedef struct s_dna
 	int	time_to_sleep;
 	int	meals;
 }	t_dna;
-
 
 typedef struct s_philo
 {
@@ -69,24 +68,23 @@ int		ft_atoi(char *str);
 int		parse_args(int argc, char **argv, t_dna *d);
 
 //parser_utils.c:
-void ft_bzero(void *s, size_t n);
-void *ft_calloc(size_t count, size_t size);
-char *ft_itoa(int n);
-char *ft_strjoin(char const *s1, char const *s2);
+void	ft_bzero(void *s, size_t n);
+void	*ft_calloc(size_t count, size_t size);
+char	*ft_itoa(int n);
+char	*ft_strjoin(char const *s1, char const *s2);
 
 // initialize.c
-t_philo **prep_philos(t_dna *dna);
+t_philo	**prep_philos(t_dna *dna);
 t_table	*prepare_table(t_dna *dna);
 void	initialize_semaphores(t_table *table, t_dna *dna);
 t_table	*initialize_simulation(t_dna *dna);
-char *get_sem_name(char *sem_name, int id);
+char	*get_sem_name(char *sem_name, int id);
 
 // philo_utils.c
 long	time_stamp(void);
 int		check_death(t_philo *p);
 int		check_sim_status(t_philo *p);
 void	console_log(t_philo *p, char *action);
-
 
 // cleanup.c
 int		ft_strlen(const char *str);

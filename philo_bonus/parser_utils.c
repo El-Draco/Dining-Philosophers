@@ -6,15 +6,15 @@
 /*   By: rriyas <rriyas@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/01 14:40:51 by rriyas            #+#    #+#             */
-/*   Updated: 2023/12/01 14:45:20 by rriyas           ###   ########.fr       */
+/*   Updated: 2023/12/02 14:00:00 by rriyas           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_philosophers.h"
 
-void ft_bzero(void *s, size_t n)
+void	ft_bzero(void *s, size_t n)
 {
-	size_t i;
+	size_t	i;
 
 	i = 0;
 	while (i < n)
@@ -24,9 +24,9 @@ void ft_bzero(void *s, size_t n)
 	}
 }
 
-void *ft_calloc(size_t count, size_t size)
+void	*ft_calloc(size_t count, size_t size)
 {
-	void *temp;
+	void	*temp;
 
 	temp = malloc(count * size);
 	if (!temp)
@@ -35,9 +35,9 @@ void *ft_calloc(size_t count, size_t size)
 	return (temp);
 }
 
-static int num_size(int n)
+static int	num_size(int n)
 {
-	int i;
+	int	i;
 
 	i = 1;
 	if (n == -2147483648)
@@ -55,11 +55,11 @@ static int num_size(int n)
 	return (i);
 }
 
-char *ft_itoa(int n)
+char	*ft_itoa(int n)
 {
-	char *s;
-	int end;
-	long nb;
+	char	*s;
+	int		end;
+	long	nb;
 
 	nb = n;
 	end = num_size(n);
@@ -82,11 +82,11 @@ char *ft_itoa(int n)
 	return (s);
 }
 
-char *ft_strjoin(char const *s1, char const *s2)
+char	*ft_strjoin(char const *s1, char const *s2)
 {
-	int i;
-	char *temp;
-	int l1;
+	int		i;
+	char	*temp;
+	int		l1;
 
 	if (!s1 || !s2)
 		return (NULL);
